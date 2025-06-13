@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login & Mobile Legends Top-Up</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
+      color: #777;
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    .container {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+    /* Shared card style */
+    .card {
+      background: #121212;
+      border-radius: 15px;
+      max-width: 400px;
+      width: 90%;
+      margin: auto;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 0 20px #777;
+      color: #ff2222;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) translateX(0);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      will-change: opacity, transform;
+    }
+    /* Active screen visible */
+    .card.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, -50%) translateX(0);
+    }
+    /* Animation for enter from right */
+    .card.enter-from-right {
+      transform: translate(-50%, -50%) translateX(100%);
+    }
+    /* Animation for enter from left */
+    .card.enter-from-left {
+      transform: translate(-50%, -50%) translateX(-100%);
+    }
+
+    /* Login specific styles */
+    #loginCard h1 {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      text-shadow: 0 0 8px #ff0000cc;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #ff4444;
+      text-shadow: 0 0 4px #ff4444;
+    }
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: 2px solid #ff0000;
+      background: #1a1a1a;
+      color: #ff6666;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-weight: 500;
+    }
+    input[type="text"]::placeholder,
+    input[type="password"]::placeholder {
+      color: #ff8888;
+    }
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #ff4444;
+      box-shadow: 0 0 10px #ff4444;
+      background: #300000;
+      color: #ff9999;
+    }
+    .btn {
+      width: 100%;
+      background-color: #ff0000;
+      border: none;
+      padding: 0.9rem 1rem;
+      font-size: 1.2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      color: #000;
+      cursor: pointer;
+      box-shadow: 0 0 12px #ff0000;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+    .btn:hover {
+      background-color: #cc0000;
+      box-shadow: 0 0 20px #cc0000;
+    }
+    .error {
+      color: #ff5555;
+      margin-top: -1rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-shadow: 0 0 6px #ff5555;
+      min-height: 1.2em;
+    }
+    .success-message {
+      color: #ff4444;
+      font-weight: 600;
+      margin-top: 1rem;
+      text-shadow: 0 0 10px #ff4444;
+      text-align: center;
+      min-height: 1.2em;
+      user-select: text;
+    }
+
+    /* Top-up page styles */
+    #topupCard h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px #ff2222;
+      user-select: none;
+    }
+    #topupForm {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Add subtle pulse animation on topup amount options on hover */
+    select option:hover {
+      animation: pulseRed 0.8s infinite alternate ease-in-out;
+    }
+    @keyframes pulseRed {
+      from {
+        color: #ff3b3b;
+        text-shadow: none;
+      }
+      to {
+        color: #ff0000;
+        text-shadow: 0 0 8px #ff0000;
+      }
+    }
+
+    /* Animate button with glowing animated shadow */
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 12px #ff0000;
+      }
+      50% {
+        box-shadow: 0 0 20px #ff4444;
+      }
+      100% {
+        box-shadow: 0 0 12px #ff0000;
+      }
+    }
+    #topupCard button {
+      animation: glow 2.5s ease-in-out infinite;
+    }
+    /* Animate topupCard on page enter with scale and fade */
+    #topupCard.active {
+      animation: scaleFadeIn 0.7s forwards;
+    }
+    @keyframes scaleFadeIn {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.85);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    /* Confirmation message for top-up */
+    .confirmation-msg {
+      margin-top: 1rem;
+      font-weight: 700;
+      color: #ff2c2c;
+      text-shadow: 0 0 12px #ff2c2c;
+      user-select: text;
+      text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .card {
+        width: 95%;
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Card -->
+    <section id="loginCard" class="card active" aria-label="Login form">
+      <h1>Login</h1>
+      <form id="loginForm" novalidate>
+        <label for="loginUsername">Username</label>
+        <input type="text" id="loginUsername" name="loginUsername" autocomplete="username" placeholder="Enter your username" />
+        <div class="error" id="loginUsernameError"></div>
+
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" name="loginPassword" autocomplete="current-password" placeholder="Enter your password" />
+        <div class="error" id="loginPasswordError"></div>
+
+        <button type="submit" class="btn">Log In</button>
+        <div class="success-message" id="loginSuccessMessage"></div>
+      </form>
+    </section>
+
+    <!-- Top-up Card -->
+    <section id="topupCard" class="card" aria-label="Mobile Legends Top-up form" >
+      <h1>Diopedia</h1>
+      <form id="topupForm" novalidate>
+        <label for="userId">Mobile Legends User ID</label>
+        <input type="text" id="userId" name="userId" autocomplete="off" placeholder="Enter your ML User ID" />
+
+        <label for="topupAmount">Select Top-Up Amount</label>
+        <select id="topupAmount" name="topupAmount" aria-label="Select diamond top-up amount">
+          <option value="" disabled selected>Select diamonds</option>
+          <option value="550">550 Diamonds - 50</option>
+          <option value="1200">1200 Diamonds - 1.000</option>
+          <option value="2500">2500 Diamonds - 2.000</option>
+          <option value="4000">4000 Diamonds - 3.000</option>
+          <option value="7200">7200 Diamonds - 5.000</option>
+        </select>
+
+        <div class="error" id="topupFormError"></div>
+        <button type="submit" class="btn">Top Up Now</button>
+      </form>
+      <div class="confirmation-msg" id="confirmationMessage"></div>
+    </section>
+  </div>
+
+  <script>
+    // Elements for login
+    const loginCard = document.getElementById('loginCard');
+    const loginForm = document.getElementById('loginForm');
+    const loginUsernameInput = document.getElementById('loginUsername');
+    const loginPasswordInput = document.getElementById('loginPassword');
+    const loginUsernameError = document.getElementById('loginUsernameError');
+    const loginPasswordError = document.getElementById('loginPasswordError');
+    const loginSuccessMessage = document.getElementById('loginSuccessMessage');
+
+    // Elements for top-up
+    const topupCard = document.getElementById('topupCard');
+    const topupForm = document.getElementById('topupForm');
+    const userIdInput = document.getElementById('userId');
+    const topupSelect = document.getElementById('topupAmount');
+    const topupFormError = document.getElementById('topupFormError');
+    const confirmationMessage = document.getElementById('confirmationMessage');
+
+    // Show/hide helpers with animation
+    function showCard(cardToShow, cardToHide) {
+      // Hide old card
+      cardToHide.classList.remove('active');
+      // Wait for transition then show new card with animation
+      setTimeout(() => {
+        cardToShow.classList.add('active');
+      }, 50);
+    }
+
+    // Login validation and flow
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Clear messages
+      loginUsernameError.textContent = '';
+      loginPasswordError.textContent = '';
+      loginSuccessMessage.textContent = '';
+
+      let error = false;
+      if (!loginUsernameInput.value.trim()) {
+        loginUsernameError.textContent = 'Username is required';
+        error = true;
+      }
+      if (!loginPasswordInput.value) {
+        loginPasswordError.textContent = 'Password is required';
+        error = true;
+      }
+
+      if (!error) {
+        // For demo: just show success message briefly and then transition
+        loginSuccessMessage.textContent = 'Login successful! Redirecting...';
+        setTimeout(() => {
+          loginSuccessMessage.textContent = '';
+          loginForm.reset();
+          // Show top-up card, hide login card
+          showCard(topupCard, loginCard);
+        }, 1500);
+      }
+    });
+
+    // Top-up validation
+    topupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      topupFormError.textContent = '';
+      confirmationMessage.textContent = '';
+
+      const userId = userIdInput.value.trim();
+      const topupValue = topupSelect.value;
+
+      if (!userId) {
+        topupFormError.textContent = 'Please enter your Mobile Legends User ID.';
+        return;
+      }
+      if (!topupValue) {
+        topupFormError.textContent = 'Please select a top-up amount.';
+        return;
+      }
+
+      confirmationMessage.textContent = `Successfully initiated top-up of ${topupValue} diamonds for user ID "${userId}". Thank you for using Diopedia!`;
+      topupForm.reset();
+    });
+
+  </script>
+
+</body>
+</html>
+
